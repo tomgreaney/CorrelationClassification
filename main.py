@@ -42,14 +42,14 @@ if __name__ == '__main__':
     train_y = train["class"].to_numpy()
 
     cda = CorrelationDiscriminantAnalysis()
-    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=5)
+    start = time.time()
+    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=10)
+    end = time.time()
 
     test_x = test.drop(["class"], axis=1).values.tolist()
     test_y = test["class"].to_numpy()
 
-    start = time.time()
     predictions = cda.predict(test_x)
-    end = time.time()
 
     positive = 'p'
 
@@ -76,11 +76,11 @@ if __name__ == '__main__':
     false_positives = round(false_positives / num_vals, 6)
     false_negatives = round(false_negatives / num_vals, 6)
 
-    print("\nTime Taken:", (end-start)*1000, "ms.\n")
+    print("\nTime Taken:", str((end-start)*1000) + "ms.\n")
 
     print("                    Prediction Poisonous, Prediction Edible")
     print("Actually Poisonous ", true_positives, "            ", false_negatives)
     print("Actually Edible    ", false_positives, "            ", true_negatives)
 
-    print("\nAccuracy: ", (true_positives + true_negatives))
-
+    print("\nAccuracy:       ", round((true_positives + true_negatives), 6))
+    print("Clipping Range: ", round(cda.clippingRange, 6))
