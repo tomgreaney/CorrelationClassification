@@ -1,16 +1,11 @@
-# This is a sample Python script.
+# Correlation Discriminant Analysis test
+# Author:        Thomas Greaney <t9reaney@gmail.com>
+# Created:        7th July 2023
+# Last Modified: 13th July 2023
+from CDA import CorrelationDiscriminantAnalysis
+import pandas as pd
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    print('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    cda = CorrelationDiscriminantAnalysis()
