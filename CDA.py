@@ -163,6 +163,9 @@ class CorrelationDiscriminantAnalysis:
                                Fitted estimator.
         """
 
+        y = np.array(y)
+        x = np.array(x)
+
         encodedLabels = oneHotEncodedLabels(y)
         self.correlationVectors = getCorrelationVectors(x, encodedLabels)
         self.classes = unique_labels(y)
