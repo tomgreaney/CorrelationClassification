@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import scipy.stats as stats
 
+
 def getCorrelationVectors(x, y):
     """
     :param x: array of shape (n_samples, n_features)
@@ -130,3 +131,26 @@ def clipVectors(vectors, c):
             if abs(vector[i]) <= c:
                 vector[i] = 0
 
+
+def getVariances(matrix):
+    """
+    Gets the average variance across columns in a matrix
+    :param matrix: array of shape (m, n)
+           the matrix for which we are obtaining the column variances
+    :return: array of shape (n)
+    """
+
+    transverse = np.array(matrix).T
+
+    variances = []
+
+    for column in transverse:
+        length = len(column)
+        totalVariance = 0
+        for i in range(0, length):
+            for j in range(i, length):
+                totalVariance = totalVariance + abs(column[i]-column[j])
+
+        variances.append(totalVariance / length)
+
+    return np.array(variances)

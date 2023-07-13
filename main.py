@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     cda = CorrelationDiscriminantAnalysis()
     start = time.time()
-    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=10)
+    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=10, variance_scaling=True)
     end = time.time()
 
     test_x = test.drop(["class"], axis=1).values.tolist()

@@ -18,27 +18,30 @@ class CorrelationDiscriminantAnalysis:
         self.clippingRange = 1  # clipping value for correlation vector to remove noise
         self.predictions = None  # values predicted for unseen data
 
-    def fit(self, x, y, enable_clipping=False, max_iterations=10):
+    def fit(self, x, y, enable_clipping=False, max_iterations=10, variance_scaling=False):
         """
         Fit the Correlation Discriminant Analysis model.
 
-        :param x:              array-like of shape (n_samples, n_features)
-                               Training data.
-                               Assumes data in X is of normal distribution
-                               requires categorical data to be one-hot encoded
-                               requires no minority classes in X
+        :param x:               array-like of shape (n_samples, n_features)
+                                Training data.
+                                Assumes data in X is of normal distribution
+                                requires categorical data to be one-hot encoded
+                                requires no minority classes in X
 
-        :param y:              array-like of shape (n_samples,)
-                               Target values.
+        :param y:               array-like of shape (n_samples,)
+                                Target values.
 
         :param enable_clipping: boolean
-                               determines whether correlation vectors are transformed for optimisation
+                                determines whether correlation vectors are transformed for optimisation
 
-        :param max_iterations: integer
-                               maximum gradient ascent iterations when finding optimal clipping values
+        :param max_iterations:   integer
+                                 maximum gradient ascent iterations when finding optimal clipping values
 
-        :return:               self : object
-                               Fitted estimator.
+        :param variance_scaling: boolean
+                                 applies scaling to correlation vectors based off the variance between classes
+
+        :return:                self : object
+                                Fitted estimator.
         """
 
         y = np.array(y)
@@ -48,6 +51,11 @@ class CorrelationDiscriminantAnalysis:
         self.correlationVectors = utils.getCorrelationVectors(x, encodedLabels)
         self.classes = unique_labels(y)
         self.num_classes = len(self.classes)
+
+        if variance_scaling:
+            variances = utils.getVariances(self.correlationVectors)
+            for i in range(0, self.num_classes):
+                self.correlationVectors[i] = np.multiply(variances, self.correlationVectors[i])
 
         if enable_clipping:
             clipping_range = self.__getOptimalClipping(x, y, max_iterations)
@@ -167,6 +175,7 @@ class CorrelationDiscriminantAnalysis:
 
         position = len(checked) - 1  # position when iterating through checked array
 
+        # optimise this by just checking indices in proximity to best index
         for i in range(num_spaced_checks, max_iterations):
             if position == (len(checked) - 1):
                 position = 0
