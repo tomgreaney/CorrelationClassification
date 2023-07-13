@@ -5,6 +5,7 @@
 from CDA import CorrelationDiscriminantAnalysis
 import pandas as pd
 from sklearn import preprocessing
+import time
 
 if __name__ == '__main__':
     # prepare data
@@ -38,18 +39,19 @@ if __name__ == '__main__':
     test = random.tail(1624)
 
     train_x = train.drop(["class"], axis=1).values.tolist()
-    train_y = train[["class"]].values.tolist()
+    train_y = train["class"].to_numpy()
 
     cda = CorrelationDiscriminantAnalysis()
-    cda.fit(train_x, train_y)
+    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=5)
 
     test_x = test.drop(["class"], axis=1).values.tolist()
-    test_y = test["class"].values.tolist()
+    test_y = test["class"].to_numpy()
 
+    start = time.time()
     predictions = cda.predict(test_x)
+    end = time.time()
 
     positive = 'p'
-    # negative = 'e'
 
     true_positives = 0
     true_negatives = 0
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     false_negatives = 0
     num_vals = len(predictions)
 
-    for i in range (0, len(predictions)):
+    for i in range(0, len(predictions)):
         if predictions[i] == positive:
             if predictions[i] == test_y[i]:
                 true_positives = true_positives + 1
@@ -74,8 +76,11 @@ if __name__ == '__main__':
     false_positives = round(false_positives / num_vals, 6)
     false_negatives = round(false_negatives / num_vals, 6)
 
+    print("\nTime Taken:", (end-start)*1000, "ms.\n")
+
     print("                    Prediction Poisonous, Prediction Edible")
     print("Actually Poisonous ", true_positives, "            ", false_negatives)
     print("Actually Edible    ", false_positives, "            ", true_negatives)
 
     print("\nAccuracy: ", (true_positives + true_negatives))
+

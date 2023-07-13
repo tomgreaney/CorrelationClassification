@@ -40,9 +40,9 @@ def getCorrelationVector(x, y):
     # get transverse array
     npX = np.array(x).T
 
-    for variable in npX:
+    for feature in npX:
         # calculate pearson correlation
-        correlation = stats.pearsonr(variable, y)[0]
+        correlation = stats.pearsonr(feature, y)[0]
         variableCorrelations.append(correlation)
     return variableCorrelations
 
@@ -69,7 +69,18 @@ def oneHotEncodedLabels(y):
 
 
 def getAccuracy(predictedVals, targetVals):
-    if len(predictedVals != len(targetVals)):
+    """
+    Get the percentage of correct predictions
+
+    :param predictedVals: array of shape (n_samples)
+                          class labels of predicted classes
+    :param targetVals:    array of shape (n_samples)
+                          class labels of true classes
+    :return:              float
+                          accuracy value
+    """
+
+    if len(predictedVals) != len(targetVals):
         return -1
 
     num_correct_predictions = 0
@@ -221,7 +232,9 @@ class CorrelationDiscriminantAnalysis:
 
             predictions.append(self.classes[closest_class])
 
-        return predictions
+        self.predictions = predictions
+
+        return np.array(predictions)
 
     def __calcClippedAccuracy(self, x, c, y):
         """
@@ -308,18 +321,19 @@ class CorrelationDiscriminantAnalysis:
 
             while invalid_position:
                 position = position + 1
-                invalid_position = checked[position] - checked[position + 1] == -1
                 if position == (len(checked) - 1):
                     i = i - 1
                     skip = True
                     invalid_position = False
+                if invalid_position:
+                    invalid_position = checked[position] - checked[position + 1] == -1
 
             if skip:
                 continue
 
             index = int((checked[position] + checked[position + 1]) / 2)
-            checked.insert(position, index)
-            position = position + 1
+            checked.insert(position+1, index)
+            position = position + 2
 
             clipping_point = correlationFlattened[index]
 
