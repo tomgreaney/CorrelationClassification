@@ -1,4 +1,4 @@
-# Correlation Discriminant Analysis
+# Correlation Discriminant Analysis Utility functions
 # Author:        Thomas Greaney <t9reaney@gmail.com>
 # Created:       13th July 2023
 # Last Modified: 13th July 2023
@@ -109,7 +109,7 @@ def deepClipVector(vector, c):
     clippedVector = copy.deepcopy(vector)
 
     for i in range(0, len(clippedVector)):
-        if abs(clippedVector[i]) <= c:
+        if abs(clippedVector[i]) < c:
             clippedVector[i] = 0
 
     return clippedVector
@@ -123,20 +123,21 @@ def clipVectors(vectors, c):
     :param vectors: array of shape (num_classes, n_features)
                     correlation vectors
     :param c: float value in the range (0,1)
-              any value inside vector within the range [-c, c] will be set to 0.
+              any value inside vector within the range [-c, c] will be set to 0
     """
 
     for vector in vectors:
         for i in range(0, len(vector)):
-            if abs(vector[i]) <= c:
+            if abs(vector[i]) < c:
                 vector[i] = 0
 
 
 def getVariances(matrix):
     """
-    Gets the average variance across columns in a matrix
+    Gets the average difference between two values for each column in a matrix
+
     :param matrix: array of shape (m, n)
-           the matrix for which we are obtaining the column variances
+           the matrix for which we are obtaining the average column differences
     :return: array of shape (n)
     """
 

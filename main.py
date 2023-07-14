@@ -6,6 +6,7 @@ from CDA import CorrelationDiscriminantAnalysis
 import pandas as pd
 from sklearn import preprocessing
 import time
+from metrics import ConfusionMatrix
 
 if __name__ == '__main__':
     # prepare data
@@ -43,7 +44,7 @@ if __name__ == '__main__':
 
     cda = CorrelationDiscriminantAnalysis()
     start = time.time()
-    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=10, variance_scaling=True)
+    cda.fit(train_x, train_y, enable_clipping=True, max_iterations=30, variance_scaling=True)
     end = time.time()
 
     test_x = test.drop(["class"], axis=1).values.tolist()
@@ -51,36 +52,9 @@ if __name__ == '__main__':
 
     predictions = cda.predict(test_x)
 
-    positive = 'p'
-
-    true_positives = 0
-    true_negatives = 0
-    false_positives = 0
-    false_negatives = 0
-    num_vals = len(predictions)
-
-    for i in range(0, len(predictions)):
-        if predictions[i] == positive:
-            if predictions[i] == test_y[i]:
-                true_positives = true_positives + 1
-            else:
-                false_positives = false_positives + 1
-        else:
-            if predictions[i] == test_y[i]:
-                true_negatives = true_negatives + 1
-            else:
-                false_negatives = false_negatives + 1
-
-    true_positives = round(true_positives / num_vals, 6)
-    true_negatives = round(true_negatives / num_vals, 6)
-    false_positives = round(false_positives / num_vals, 6)
-    false_negatives = round(false_negatives / num_vals, 6)
-
-    print("\nTime Taken:", str((end-start)*1000) + "ms.\n")
-
-    print("                    Prediction Poisonous, Prediction Edible")
-    print("Actually Poisonous ", true_positives, "            ", false_negatives)
-    print("Actually Edible    ", false_positives, "            ", true_negatives)
-
-    print("\nAccuracy:       ", round((true_positives + true_negatives), 6))
     print("Clipping Range: ", round(cda.clippingRange, 6))
+
+    confusionMatrix = ConfusionMatrix(test_y, predictions)
+    print(confusionMatrix)
+
+    confusionMatrix.printAccuracy()
