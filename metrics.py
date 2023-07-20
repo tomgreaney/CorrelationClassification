@@ -59,8 +59,6 @@ def getZScore(x1, x2, label):
     mean = np.mean(differences)
     std = np.std(differences)
 
-    print("models", label, "Mean:", mean, "sts:", std)
-
     z_score = mean / std
 
     return z_score
