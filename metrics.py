@@ -1,21 +1,23 @@
 # Metrics Functions for CDA experiments
 # Author:        Thomas Greaney <t9reaney@gmail.com>
 # Created:       14th July 2023
-# Last Modified: 14th July 2023
+# Last Modified: 20th July 2023
 
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 import numpy as np
 import pandas as pd
+import copy
 
 
 class ConfusionMatrix:
 
-    def __init__(self, true_labels, predicted_labels):
+    def __init__(self, true_labels, predicted_labels, title):
         self._class_labels = unique_labels(true_labels)
         confusion_sums = confusion_matrix(true_labels, predicted_labels)
         num_samples = len(true_labels)
         self._confusion_matrix = np.divide(confusion_sums, num_samples)
+        self._title = title
 
     def __str__(self):
         column_names = []
@@ -25,7 +27,7 @@ class ConfusionMatrix:
             row_names.append("Truly " + label)
         df = pd.DataFrame(self._confusion_matrix, columns=column_names, index=row_names)
 
-        title = "\n         Confusion Matrix\n"
+        title = "\n         " + self._title + "\n"
         return title + str(df) + "\n"
 
     def printAccuracy(self):
@@ -34,3 +36,31 @@ class ConfusionMatrix:
             accuracy += self._confusion_matrix[i][i]
 
         print("Accuracy:", accuracy)
+
+    def getAccuracy(self):
+        accuracy = 0
+        for i in range(0, len(self._class_labels)):
+            accuracy += self._confusion_matrix[i][i]
+
+        return accuracy
+
+    def getMatrix(self):
+        return copy.deepcopy(self._confusion_matrix)
+
+
+def getZScore(x1, x2, label):
+    if len(x1) != len(x2):
+        raise Exception("Comparing two arrays of unequal size")
+
+    differences = [0] * len(x1)
+    for i in range(0, len(differences)):
+        differences[i] = x1[i] - x2[i]
+
+    mean = np.mean(differences)
+    std = np.std(differences)
+
+    print("models", label, "Mean:", mean, "sts:", std)
+
+    z_score = mean / std
+
+    return z_score
