@@ -1,7 +1,7 @@
 # Correlation Discriminant Analysis
 # Author:        Thomas Greaney <t9reaney@gmail.com>
 # Created:        7th July 2023
-# Last Modified: 13th July 2023
+# Last Modified: 22nd July 2023
 from sklearn.utils.multiclass import unique_labels
 import math
 import numpy as np
@@ -117,10 +117,14 @@ class CorrelationDiscriminantAnalysis:
         Calculates the accuracy of the correlation model when only using correlation values where the absolute value is
         above a given threshold c.
 
-        :param x: training data
-        :param c: clipping range
-        :param y: target values for classes
-        :return: accuracy using clipped vectors with range c
+        :param x: array-like or sparse matrix, shape (n_samples, n_features)
+                  Training data
+        :param c: float
+                  clipping range
+        :param y: array-like of shape (n_samples,)
+                  Target values.
+        :return : float
+                  accuracy using clipped vectors with range c
         """
 
         clippedVectors = []
@@ -136,11 +140,19 @@ class CorrelationDiscriminantAnalysis:
 
     def __getOptimalClipping(self, x, y, max_iterations):
         """
+        Searches for the clipping value which yields optimal accuracy on the training data
 
-        :param x:
-        :param y:
-        :param max_iterations:
-        :return:
+        :param x:              array-like or sparse matrix, shape (n_samples, n_features)
+                               Training data
+
+        :param y:              array-like of shape (n_samples,)
+                               Target values
+
+        :param max_iterations: int
+                               maximum number of attempts to find clipping values which return yield optimal accuracy
+
+        :return:               float
+                               optimal value to clip correlation vector
         """
 
         correlationFlattened = np.array(self.correlationVectors).flatten()
@@ -175,7 +187,6 @@ class CorrelationDiscriminantAnalysis:
 
         position = len(checked) - 1  # position when iterating through checked array
 
-        # optimise this by just checking indices in proximity to best index
         for i in range(num_spaced_checks, max_iterations):
             if position == (len(checked) - 1):
                 position = 0
