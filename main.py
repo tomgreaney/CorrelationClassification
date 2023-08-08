@@ -7,4 +7,4 @@ from experiment import run_mushroom_experiment
 
 if __name__ == '__main__':
 
-    run_mushroom_experiment(num_iterations=5)
+    run_mushroom_experiment()

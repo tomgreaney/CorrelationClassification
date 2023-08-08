@@ -13,9 +13,9 @@ import copy
 class ConfusionMatrix:
 
     def __init__(self, true_labels, predicted_labels, title):
-        self._class_labels = unique_labels(true_labels)
-        confusion_sums = confusion_matrix(true_labels, predicted_labels)
+        confusion_sums = confusion_matrix(predicted_labels, true_labels)
         num_samples = len(true_labels)
+        self._class_labels = unique_labels(true_labels)
         self._confusion_matrix = np.divide(confusion_sums, num_samples)
         self._title = title
 
@@ -23,12 +23,12 @@ class ConfusionMatrix:
         column_names = []
         row_names = []
         for label in self._class_labels:
-            column_names.append("Predicted " + label)
-            row_names.append("Truly " + label)
+            column_names.append("Predicted " + str(label))
+            row_names.append("Truly " + str(label))
         df = pd.DataFrame(self._confusion_matrix, columns=column_names, index=row_names)
 
         title = "\n         " + self._title + "\n"
-        return title + str(df) + "\n"
+        return title + df.to_string(max_cols=10) + "\n"
 
     def printAccuracy(self):
         accuracy = 0

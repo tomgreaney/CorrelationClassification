@@ -59,7 +59,6 @@ def run_experiment(train_x, train_y, test_x):
 
 
 def run_mushroom_experiment(num_iterations=10):
-
     print("\nTesting Correlation Discriminant Analysis on Mushroom Dataset")
     print("6 models are evaluated using the same experiment repeated", num_iterations, "times.")
     print("Each repetition has an independent random split on training/test data, with an 80:20 split ratio.\n")
@@ -106,6 +105,140 @@ def run_mushroom_experiment(num_iterations=10):
 
         test_x = test.drop(["class"], axis=1).values.tolist()
         test_y = test["class"].to_numpy()
+
+        test_ys.append(test_y)
+        experiment_result = run_experiment(train_x, train_y, test_x)
+        experiment_accuracies = [ConfusionMatrix(result, test_y, "Confusion Matrix").getAccuracy() for result in
+                                 experiment_result]
+        for j in range(0, len(experiment_accuracies)):
+            accuracies[j].append(experiment_accuracies[j])
+
+        experiment_results.append(experiment_result)
+
+    printExperimentResults(test_ys, experiment_results, accuracies, num_iterations)
+
+
+def run_adults_experiment(num_iterations=10):
+    print("\nTesting Correlation Discriminant Analysis on Diabetes Dataset")
+    print("6 models are evaluated using the same experiment repeated", num_iterations, "times.")
+    print("Each repetition has an independent random split on training/test data, with an 80:20 split ratio.\n")
+
+    # prepare data
+    df = pd.read_csv('data/adult.csv')
+
+    # make even distribution between over and under 50k diagnosis
+    over = df[df['salaryOver50K'] == 1]
+    under = df[df['salaryOver50K'] == 0].sample(n=len(over.index))
+    df = pd.concat([over, under])
+
+    df = pd.get_dummies(df,
+                        columns=['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race',
+                                 'sex', 'capital-gain', 'capital-loss', 'native-country'],
+                        drop_first=False)
+
+    ageStd = df['age'].std()
+    ageMean = df['age'].mean()
+    cutOff1 = ageMean - (2 * ageStd)
+
+    def condition1(x):
+        if x < cutOff1:
+            return 1
+        else:
+            return 0
+
+    cutOff2 = ageMean - (0.5 * ageStd)
+
+    def condition2(x):
+        if x < cutOff2 and x >= cutOff1:
+            return 1
+        else:
+            return 0
+
+    cutOff3 = ageMean + (0.5 * ageStd)
+
+    def condition3(x):
+        if x < cutOff3 and x >= cutOff2:
+            return 1
+        else:
+            return 0
+
+    cutOff4 = ageMean + (2 * ageStd)
+
+    def condition4(x):
+        if x < cutOff4 and x >= cutOff3:
+            return 1
+        else:
+            return 0
+
+    def condition5(x):
+        if x >= cutOff4:
+            return 1
+        else:
+            return 0
+
+    # df['age1'] = df['age'].apply(condition1) 0 exist
+    df['age2'] = df['age'].apply(condition2)
+    df['age3'] = df['age'].apply(condition3)
+    df['age4'] = df['age'].apply(condition4)
+    df['age5'] = df['age'].apply(condition5)
+    df = df.drop(columns=['age'])
+
+    fnlwgtStd = df['fnlwgt'].std()
+    fnlwgtMean = df['fnlwgt'].mean()
+    cutOff1 = fnlwgtMean - (2 * fnlwgtStd)
+    cutOff2 = fnlwgtMean - (0.5 * fnlwgtStd)
+    cutOff3 = fnlwgtMean + (0.5 * fnlwgtStd)
+    cutOff4 = fnlwgtMean + 2 * fnlwgtStd
+    # df['fnlwgt1'] = df['fnlwgt'].apply(condition1) none exist
+    df['fnlwgt2'] = df['fnlwgt'].apply(condition2)
+    df['fnlwgt3'] = df['fnlwgt'].apply(condition3)
+    df['fnlwgt4'] = df['fnlwgt'].apply(condition4)
+    df['fnlwgt5'] = df['fnlwgt'].apply(condition5)
+    df = df.drop(columns=['fnlwgt'])
+
+    educationStd = df['education-num'].std()
+    educationMean = df['education-num'].mean()
+    cutOff1 = educationMean - (2 * educationStd)
+    cutOff2 = educationMean - (0.5 * educationStd)
+    cutOff3 = educationMean + (0.5 * educationStd)
+    cutOff4 = educationMean + 2 * educationStd
+    # df['education-num1'] = df['education-num'].apply(condition1)
+    df['education-num2'] = df['education-num'].apply(condition2)
+    df['education-num3'] = df['education-num'].apply(condition3)
+    df['education-num4'] = df['education-num'].apply(condition4)
+    # df['education-num5'] = df['education-num'].apply(condition5)
+    df = df.drop(columns=['education-num'])
+
+    hoursStd = df['hours-per-week'].std()
+    hoursMean = df['hours-per-week'].mean()
+    cutOff1 = hoursMean - (2 * hoursStd)
+    cutOff2 = hoursMean - (0.5 * hoursStd)
+    cutOff3 = hoursMean + (0.5 * hoursStd)
+    cutOff4 = hoursMean + 2 * hoursStd
+    df['hours-per-week1'] = df['hours-per-week'].apply(condition1)
+    df['hours-per-week2'] = df['hours-per-week'].apply(condition2)
+    df['hours-per-week3'] = df['hours-per-week'].apply(condition3)
+    df['hours-per-week4'] = df['hours-per-week'].apply(condition4)
+    df['hours-per-week5'] = df['hours-per-week'].apply(condition5)
+    df = df.drop(columns=['hours-per-week'])
+
+    # make even distribution between healthy and diabetes diagnosis
+    experiment_results = []
+    test_ys = []
+    accuracies = [[], [], [], [], [], []]
+
+    # get average accuracies and confusion matrices over num_iterations experiments
+    for i in range(0, num_iterations):
+        print("Running Experiments:", str(i) + "/" + str(num_iterations))
+        random = df.sample(frac=1)
+        train = random.head(26000)
+        test = random.tail(6000)
+
+        train_x = train.drop(["salaryOver50K"], axis=1).values.tolist()
+        train_y = train["salaryOver50K"].to_numpy()
+
+        test_x = test.drop(["salaryOver50K"], axis=1).values.tolist()
+        test_y = test["salaryOver50K"].to_numpy()
 
         test_ys.append(test_y)
         experiment_result = run_experiment(train_x, train_y, test_x)
@@ -179,11 +312,9 @@ def printExperimentResults(test_ys, experiment_results, accuracies, num_iteratio
         for j in range(0, NUM_MODELS):
             if j == i:
                 confidence_better[i][j] = "X"
-            elif j < i:
-                confidence_better[i][j] = ""
-            else:
-                z_score = getZScore(accuracies[j], accuracies[i], str(j+1) + " " + str(i+1))
-                p_value = stats.t.sf(abs(z_score), df=(num_iterations-1)) * 2
+            elif j > i:
+                z_score = getZScore(accuracies[j], accuracies[i], str(j + 1) + " " + str(i + 1))
+                p_value = stats.t.sf(abs(z_score), df=(num_iterations - 1)) * 2
                 confidence = 100 * (1 - p_value)
                 confidence_better[i][j] = str(round(confidence, 2))
 
@@ -191,3 +322,101 @@ def printExperimentResults(test_ys, experiment_results, accuracies, num_iteratio
     print("\nConfidence percentage that one model outperforms another")
     print(confidence_matrix)
 
+
+def run_cover_experiment(num_iterations=10):
+    print("\nTesting Correlation Discriminant Analysis on Mushroom Dataset")
+    print("6 models are evaluated using the same experiment repeated", num_iterations, "times.")
+    print("Each repetition has an independent random split on training/test data, with an 80:20 split ratio.\n")
+
+    # prepare data
+    df = pd.read_csv('data/covtype.csv', dtype={'Cover_Type': str})
+
+    constant = (2 * np.pi) / 360
+
+    def cos(x):
+        return np.cos(x * constant)
+
+    def sin(x):
+        return np.sin(x * constant)
+
+    constant = (2 * np.pi) / 360
+    df['sin(Aspect)'] = df['Aspect'].apply(sin)
+    df['cos(Aspect)'] = df['Aspect'].apply(cos)
+    df = df.drop(columns=['Aspect'])
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    df[['Elevation']] = min_max_scaler.fit_transform(df[['Elevation']])
+    df[['Slope']] = min_max_scaler.fit_transform(df[['Slope']])
+    df[['Hydro_Vert_Dist']] = min_max_scaler.fit_transform(df[['Hydro_Vert_Dist']])
+    df[['Hydro_Hor_Dist']] = min_max_scaler.fit_transform(df[['Hydro_Hor_Dist']])
+    df[['Road_Hor_Dist']] = min_max_scaler.fit_transform(df[['Road_Hor_Dist']])
+    df[['Shade_09']] = min_max_scaler.fit_transform(df[['Shade_09']])
+    df[['Shade_12']] = min_max_scaler.fit_transform(df[['Shade_12']])
+    df[['Shade_15']] = min_max_scaler.fit_transform(df[['Shade_15']])
+    df[['FireP_Hor_Dist']] = min_max_scaler.fit_transform(df[['FireP_Hor_Dist']])
+    df[['sin(Aspect)']] = min_max_scaler.fit_transform(df[['sin(Aspect)']])
+    df[['cos(Aspect)']] = min_max_scaler.fit_transform(df[['cos(Aspect)']])
+
+    cover4 = df[df["Cover_Type"] == "4"]
+    sampleLength = len(cover4.index)
+
+    cover1 = df[df['Cover_Type'] == "1"].sample(n=sampleLength)
+    cover2 = df[df['Cover_Type'] == "2"].sample(n=sampleLength)
+    cover3 = df[df['Cover_Type'] == "3"].sample(n=sampleLength)
+    cover5 = df[df['Cover_Type'] == "5"].sample(n=sampleLength)
+    cover6 = df[df['Cover_Type'] == "6"].sample(n=sampleLength)
+    cover7 = df[df['Cover_Type'] == "7"].sample(n=sampleLength)
+
+    df = pd.concat([cover1, cover2, cover3, cover4, cover5, cover6, cover7])
+
+    dropped = []
+
+    for column in df:
+        if df[column].nunique() == 1:
+            df = df.drop(columns=[column])
+            dropped.append(column)
+
+    print("dropped:", dropped)
+
+    experiment_results = []
+    test_ys = []
+    accuracies = [[], [], [], [], [], []]
+
+    i = 0
+
+    # get average accuracies and confusion matrices over num_iterations experiments
+    while i < num_iterations:
+        i = i + 1
+        random = df.sample(frac=1)
+        train = random.head(15383)
+        skip = False
+        for column in train:
+            if train[column].nunique() == 1:
+                train = train.drop(columns=[column])
+                dropped.append(column)
+                skip = True
+        if skip:
+            i = i - 1
+            continue
+
+        test = random.tail(3846)
+        print("Running Experiments:", str(i) + "/" + str(num_iterations))
+
+
+        train_x = train.drop(['Cover_Type'], axis=1).values.tolist()
+        train_y = train['Cover_Type'].to_numpy()
+
+        test_x = test.drop(['Cover_Type'], axis=1).values.tolist()
+        test_y = test['Cover_Type'].to_numpy()
+
+        test_ys.append(test_y)
+        experiment_result = run_experiment(train_x, train_y, test_x)
+        experiment_accuracies = [ConfusionMatrix(result, test_y, "Confusion Matrix").getAccuracy() for result in
+                                 experiment_result]
+        for j in range(0, len(experiment_accuracies)):
+            accuracies[j].append(experiment_accuracies[j])
+
+        experiment_results.append(experiment_result)
+
+
+    printExperimentResults(test_ys, experiment_results, accuracies, num_iterations)

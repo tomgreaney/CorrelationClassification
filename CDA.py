@@ -91,7 +91,7 @@ class CorrelationDiscriminantAnalysis:
                                     Unseen data
         :param correlationVectors:  array of shape (n_features, n_classes)
                                     correlations between each feature and each target class
-        :return:                    C : array, shape (n_samples,)
+        :return:                    array, shape (n_samples,)
                                     Returns predicted values.
         """
         predictions = []
@@ -149,7 +149,7 @@ class CorrelationDiscriminantAnalysis:
                                Target values
 
         :param max_iterations: int
-                               maximum number of attempts to find clipping values which return yield optimal accuracy
+                               maximum number of attempts to find clipping values which yield optimal accuracy
 
         :return:               float
                                optimal value to clip correlation vector
